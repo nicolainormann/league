@@ -10,7 +10,9 @@ html
     link(rel="stylesheet" href="assets/libraries/sweetalert/dist/sweetalert.css")
     link(rel="stylesheet" href="assets/min/main.min.css")
   body
-    input(type="text" name="summonername")
+    select
+        option(value="euw")|EUW
+    input(type="text" name="summonername" id="summonername")
     input(type="button" value="search")
 
     div(data-bind="text: summonerName")

@@ -6,30 +6,39 @@ var minifycss = require('gulp-minify-css');
 var sourcemaps = require('gulp-sourcemaps');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
+var jshint = require('gulp-jshint');
 var autoprefix = require('gulp-autoprefixer');
 var prompt = require('gulp-prompt');
 var jade = require('gulp-jade');
 
+var stylish = require('jshint-stylish');
 var browsersync = require('browser-sync').create();
 var fs = require('fs-extra');
 
+
 /* SETTINGS START - DO NOT CHANGE - IF YOU HAVE TO CHANGE THESE DO IT IN THE SETTINGS.JSON AND FTP.JSON */
-var settings = JSON.parse(fs.readFileSync('settings.json', 'utf8'));
-var design = settings.design;
-var assets = design + '/' + settings.assets + '/';
-var master = design + '/' + settings.master;
+var pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+var version = pkg.version;
+
+try{
+    var settings = JSON.parse(fs.readFileSync('settings.json', 'utf8'));
+   
+    var design = settings.design;
+    var assets = design + '/' + settings.assets + '/';
+    var master = design + '/' + settings.master;  
+}
+catch(error){
+    gulputil.log('settings.json is missing');  
+}
 
 /* SETTINGS END - DO NOT CHANGE - IF YOU HAVE TO CHANGE THESE DO IT IN THE SETTINGS.JSON AND FTP.JSON */
 
 /* FILE MASKS START */
-var allfiles = [
-    design + '/**'
-];
 
-var watchFiles = [
+var watchSync = [
     design + '/**/*.html',
     design + '/**/*.cshtml',
-    design + '/**/*.png',
+    design + '/**/*.xslt',
     design + '/**/*.min.css',
     design + '/**/*.min.js'
 ];
@@ -52,13 +61,13 @@ gulp.task('default', ['browsersync', 'watchSync', 'watchScss', 'watchJs', 'watch
 gulp.task('browsersync', function(){
     browsersync.init({
         server: {
-            baseDir: "C:/Users/Nicolai/GIT/Github/league/site/"
-        } 
+            baseDir: "C:/Users/Nicolai/GIT/github/league/site/"
+        }
     });
 });
 
 gulp.task('watchSync', function(){
-    gulp.watch(watchFiles).on('change', function(file) {
+    gulp.watch(watchSync).on('change', function(file) {
         return gulp.src(file.path)
             .pipe(browsersync.stream())
     });
@@ -73,29 +82,28 @@ gulp.task('watchJs', function(){
 });
 
 gulp.task('watchJade', function(){
-    gulp.watch(watchJade, ['jade']).on('change', function(file) {
-        return gulp.src(file.path)
-            .pipe(browsersync.stream())
-    });
+    gulp.watch(watchJade, ['jade']);
 });
 
 gulp.task('sass', function(){
-    return gulp.src(assets + 'scss/*.scss')
+    return gulp.src(assets + 'scss/**/*.scss')
         .pipe(sourcemaps.init())
-        .pipe(sass())
         .pipe(concat('main.min.css'))
+        .pipe(sass())
         .pipe(autoprefix())
         .pipe(minifycss())
-        .pipe(sourcemaps.write())
+        .pipe(sourcemaps.write('map/'))
         .pipe(gulp.dest(assets + 'min/'))
 });
 
 gulp.task('uglify', function(){
     return gulp.src(assets + 'js/*.js')
+        .pipe(jshint())
+        .pipe(jshint.reporter(stylish))
         .pipe(sourcemaps.init())
         .pipe(concat('main.min.js'))
         .pipe(uglify())
-        .pipe(sourcemaps.write())
+        .pipe(sourcemaps.write('map/'))
         .pipe(gulp.dest(assets + 'min/'))
 });
 
@@ -104,7 +112,7 @@ gulp.task('jade', function(){
         .pipe(jade())
         .pipe(gulp.dest(''))
 });
-
+/* GULP SETUP START */
 gulp.task('setup', function(){
     return gulp.src('')
         .pipe(prompt.prompt([{
@@ -128,4 +136,3 @@ gulp.task('setup', function(){
             });
         }))
 });
-/* GULP SETUP END */

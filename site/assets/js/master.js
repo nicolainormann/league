@@ -1,12 +1,20 @@
-var leagueModel = function(data) {
-    this.summonerName = ko.observable(data.néronia.name);
-    this.summonerLevel = ko.observable(data.néronia.summonerLevel);
-};
+// var leagueModel = function(data) {
+//     var summoner = data[Object.keys(data)[0]];
+//     this.summonerName = ko.observable(summoner.name);
+//     this.summonerLevel = ko.observable(summoner.summonerLevel);
+// };
 
 var league = (function () {
-    var obj = {};
-    // var apiKey = "?api_key=0a8d68f4-5e00-4345-9f35-c098a7ebe45b";
-    // var apiHost = "https://euw.api.pvp.net/api/lol/euw/";
+    //"https://euw.api.pvp.net/api/lol/euw/v1.4/summoner/by-name/N%C3%A9ronia?api_key=0a8d68f4-5e00-4345-9f35-c098a7ebe45b"
+    var apiKey = "?api_key=0a8d68f4-5e00-4345-9f35-c098a7ebe45b";
+    var apiHost = "https://euw.api.pvp.net/api/lol/";
+
+    var getData = function (){
+        var name = 'Néronia'//$("#summonername").val();
+        var region = 'euw'//$("select option").val();
+        var summonerUrl = apiHost + region + "/v1.4/summoner/by-name/" + name + apiKey;
+        getJson(summonerUrl);
+    };
 
     var version = function (service){
         // champion-v1.2 
@@ -24,16 +32,28 @@ var league = (function () {
     };
 
     var getJson = function (url) {
-        $.getJSON(url, function(data) {
-            $.extend(obj, data);
+        $.ajax({
+            url: url,
+            dataType: "json",
+            success: function(data) {
+                handleData(data);
+            },
+            error: function (request, status, error) {
+                console.log(error);
+            },
+            complete: function(){
+                console.log("finished ajax");
+            }
         });
     };
 
+    var handleData = function (data){
+        
+    };
+
     return {
-        getJson: getJson,
-        obj: obj
+        getData: getData
     };
 })();
 
-league.getJson("https://euw.api.pvp.net/api/lol/euw/v1.4/summoner/by-name/N%C3%A9ronia?api_key=0a8d68f4-5e00-4345-9f35-c098a7ebe45b");
-ko.applyBindings(new leagueModel(league.obj));
+league.getData();  
